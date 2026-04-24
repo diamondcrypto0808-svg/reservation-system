@@ -3,9 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
+
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -19,9 +23,10 @@ export async function PATCH(
 
     const body = await request.json();
     const { status } = body;
+    const { id } = await params;
 
     const reservation = await prisma.reservation.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!reservation) {
@@ -39,7 +44,7 @@ export async function PATCH(
     }
 
     const updatedReservation = await prisma.reservation.update({
-      where: { id: params.id },
+      where: { id },
       data: { status },
       include: {
         service: true,
@@ -58,7 +63,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -70,8 +75,10 @@ export async function DELETE(
       );
     }
 
+    const { id } = await params;
+
     const reservation = await prisma.reservation.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!reservation) {
@@ -89,7 +96,7 @@ export async function DELETE(
     }
 
     await prisma.reservation.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: "予約をキャンセルしました" });
