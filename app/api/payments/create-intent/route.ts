@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -71,7 +70,9 @@ export async function POST(request: Request) {
       });
     }
 
-    // 実際のStripe処理
+    // 実際のStripe処理 - lazy import to avoid build-time initialization
+    const { stripe } = await import("@/lib/stripe");
+    
     const paymentIntent = await stripe.paymentIntents.create({
       amount: reservation.totalAmount,
       currency: 'jpy',

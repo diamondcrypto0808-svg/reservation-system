@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { sendReservationConfirmation } from "@/lib/email";
 import { headers } from "next/headers";
@@ -21,6 +20,9 @@ export async function POST(request: Request) {
   let event;
 
   try {
+    // Lazy import stripe to avoid build-time initialization
+    const { stripe } = await import("@/lib/stripe");
+    
     event = stripe.webhooks.constructEvent(
       body,
       signature,
